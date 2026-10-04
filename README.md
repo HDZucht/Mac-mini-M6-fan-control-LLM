@@ -10,6 +10,12 @@ tested_on: Mac mini M6 (Mac18,5), macOS 27.0.1
 
 **A tiny fan controller for Apple Silicon Macs that listens to the sensors that actually heat up when you run a local LLM: the voltage regulators next to the SoC.**
 
+## Why this exists
+
+> I run local LLMs on my new Mac mini M6. During long runs I noticed that the fan barely spins up with Apple's default settings, while the power delivery, the voltage regulators next to the chip, runs hot. Macs Fan Control does not support fan control on the M6 yet. That left an unmet need: protect a newly purchased machine from heat-related wear under sustained load, because Apple's default fan profile is tuned for silence and seems a little too relaxed for this kind of work.
+>
+> — Hans-Dieter Zucht
+
 Running a dense 27B model in LM Studio on a Mac mini M6, the voltage regulators (SMC key `TVD0`) reached **94.9 °C** while Apple's automatic fan control kept the fan at **1,031 rpm**, a hair above its 1,000 rpm minimum. macOS optimises the Mac mini for silence, and its own controller follows sensors that warm up late. This tool takes over above 60 °C and hands control back below 55 °C.
 
 First run under the same load:
