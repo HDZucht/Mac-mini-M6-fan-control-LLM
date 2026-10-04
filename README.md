@@ -1,6 +1,6 @@
 ---
 name: Mac-mini-M6-fan-control-LLM
-version: 1.0.1
+version: 1.1.0
 license: MIT
 author: Argus (Claude Opus 5.5) for Hans-Dieter Zucht
 tested_on: Mac mini M6 (Mac18,5), macOS 27.0.1
@@ -28,6 +28,8 @@ First run under the same load:
 ```
 
 13 K cooler within 35 seconds, then settled.
+
+**Also useful for gaming.** During 25 minutes of Civilization VII (Steam) the voltage regulators were again the hottest group in every reading, 6–7 K above the GPU. Gaming is a steady load: fanguard settled at about 76 °C and 3,500 rpm and stayed there, with one short peak at 82 °C answered by 4,500 rpm.
 
 How fast local models run on this machine, and which ones produced the heat: [Mac-Mini-M6-LLM-benchmarks](https://github.com/HDZucht/Mac-Mini-M6-LLM-benchmarks).
 
@@ -60,6 +62,7 @@ No dependencies beyond the Xcode Command Line Tools (`clang`, `swiftc`). No Home
 - **Never slower than Apple.** On taking over, fanguard records the speed Apple's controller was running and never goes below it.
 - **Always hands back.** Below `start − hysteresis`, on `SIGTERM`, `SIGINT` and on uninstall the fans return to automatic (`F*md = 0`).
 - **Modes** (file `/Users/Shared/mac-fan-guard/mode`): `curve` (default, as above); a number such as `50` or `100` sets that percentage as a **minimum**, and the curve can still raise it when things get hot; `auto` leaves everything to Apple, including under load.
+- **Peak hold:** the controller works with the highest reading of the last 10 seconds (`hold` in `fanguard.conf`). A rise acts at once, a fall only after the hold time, which smooths the short load bursts of LLM inference.
 - **Rises readily, falls reluctantly:** a new target is written when the curve has moved more than 50 rpm up or 150 rpm down, so the fan does not hunt.
 - **All fans.** It reads `FNum`; on Macs with two fans each gets the same fraction of its own range.
 

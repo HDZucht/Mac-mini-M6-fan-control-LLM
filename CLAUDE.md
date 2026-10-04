@@ -26,7 +26,7 @@ Never run `sudo` yourself without the user's explicit go-ahead, and never instal
 
 | Request | Where |
 |---|---|
-| other thresholds | `fanguard.conf` (`start`, `full`, `hysteresis`, `interval`); on an installed system edit `/usr/local/mac-fan-guard/fanguard.conf` and restart with `sudo launchctl kickstart -k system/io.github.hdzucht.mac-fan-guard` |
+| other thresholds or smoothing | `fanguard.conf` (`start`, `full`, `hysteresis`, `interval`, `hold`); on an installed system edit `/usr/local/mac-fan-guard/fanguard.conf` and restart with `sudo launchctl kickstart -k system/io.github.hdzucht.mac-fan-guard` |
 | other deciding sensors | `sensors=` in the same file, comma-separated key prefixes; check them with `./fanguard sensors` |
 | other Mac (two fans) | already handled through `FNum`; verify with `status` and `test` |
 | menu bar shows a different sensor | `fanguard line KEY` returns that key; change the arguments in `menubar/FanGuardMenu.swift` (`readLine`) |

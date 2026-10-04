@@ -60,7 +60,7 @@ static int write_u8(const char *key, unsigned char v) { return smc_write(key, &v
 
 // ---- Settings (fanguard.conf next to the binary, lines key=value) ----
 static char sensor_prefixes[256] = "TVD,Tg,Tp";   // prefixes of the SMC keys that decide
-static double t_start = 60, t_full = 85, hysteresis = 5, interval = 2;
+static double t_start = 60, t_full = 85, hysteresis = 5, interval = 2, hold = 10;
 static void load_conf(const char *path) {
     FILE *f = fopen(path, "r"); if (!f) return;
     char line[300];
@@ -72,6 +72,7 @@ static void load_conf(const char *path) {
         else if (!strcmp(line, "full")) t_full = atof(v);
         else if (!strcmp(line, "hysteresis")) hysteresis = atof(v);
         else if (!strcmp(line, "interval")) interval = atof(v);
+        else if (!strcmp(line, "hold")) hold = atof(v);
     }
     fclose(f);
 }
@@ -142,13 +143,24 @@ static volatile sig_atomic_t stop = 0;
 static void on_signal(int s) { (void)s; stop = 1; }
 static void nap(void) { for (int i = 0; i < interval * 10 && !stop; i++) usleep(100000); }
 
+// Peak hold: the controller uses the highest reading of the last `hold` seconds, so the fan reacts to a rise at once
+// and follows a fall only after `hold` seconds. Smooths the short load bursts of LLM inference.
+#define HOLD_MAX 256
+static double recent[HOLD_MAX]; static int nrecent = 0, recent_pos = 0;
+static double held(double t) {
+    int n = (int)(hold / interval + 0.999) + 1; if (n < 1) n = 1; if (n > HOLD_MAX) n = HOLD_MAX;
+    recent[recent_pos] = t; recent_pos = (recent_pos + 1) % n; if (nrecent < n) nrecent++;
+    double m = t; for (int i = 0; i < nrecent; i++) if (recent[i] > m) m = recent[i];
+    return m;
+}
+
 static void status(void) {
     char which[5] = "-"; double t = hottest(which);
     for (int i = 0; i < nfans; i++)
         printf("Fan %d: %.0f rpm (target %.0f, min %.0f, max %.0f), %s\n", i,
                smc_val(fkey(i, "Ac")), smc_val(fkey(i, "Tg")), fmn[i], fmx[i], smc_val(fkey(i, "md")) > 0 ? "manual" : "automatic");
-    printf("Deciding sensors (%s): hottest %s = %.1f °C · curve from %.0f, full at %.0f, hysteresis %.0f K\n",
-           sensor_prefixes, which, t, t_start, t_full, hysteresis);
+    printf("Deciding sensors (%s): hottest %s = %.1f °C · curve from %.0f, full at %.0f, hysteresis %.0f K, hold %.0f s\n",
+           sensor_prefixes, which, t, t_start, t_full, hysteresis, hold);
     char mode[32]; read_mode(mode, sizeof mode);
     printf("Service mode: %s  (change: echo curve|auto|0-100 > %s)\n", mode, MODE_FILE);
 }
@@ -158,7 +170,7 @@ static void status(void) {
 static int run(void) {
     int active = 0; double floor_rpm = fmin0; float last = -1;
     char last_mode[32] = "curve";
-    printf("fanguard running: sensors %s, curve %.0f-%.0f °C, hysteresis %.0f K, every %.0f s\n", sensor_prefixes, t_start, t_full, hysteresis, interval);
+    printf("fanguard running: sensors %s, curve %.0f-%.0f °C, hysteresis %.0f K, hold %.0f s, every %.0f s\n", sensor_prefixes, t_start, t_full, hysteresis, hold, interval);
     fflush(stdout);
     while (!stop) {
         char mode[32]; read_mode(mode, sizeof mode);
@@ -167,7 +179,7 @@ static int run(void) {
             snprintf(last_mode, sizeof last_mode, "%s", mode); active = 0; last = -1; set_auto();
         }
         if (!strcmp(mode, "auto")) { nap(); continue; }
-        char which[5] = "-"; double t = hottest(which);
+        char which[5] = "-"; double t = held(hottest(which));
         if (mode[0] >= '0' && mode[0] <= '9') {            // percentage = minimum; the curve may still go higher
             double p = atof(mode); if (p > 100) p = 100;
             double x = (t - t_start) / (t_full - t_start); if (x < 0) x = 0; if (x > 1) x = 1;

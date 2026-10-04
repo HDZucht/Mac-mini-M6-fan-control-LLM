@@ -22,7 +22,7 @@ cat > "$APP/Contents/Info.plist" <<EOF
   <key>CFBundleName</key><string>Fan Guard</string>
   <key>CFBundleExecutable</key><string>FanGuardMenu</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>1.0.1</string>
+  <key>CFBundleShortVersionString</key><string>1.1.0</string>
   <key>LSUIElement</key><true/>
 </dict></plist>
 EOF
