@@ -29,7 +29,7 @@ First run under the same load:
 
 13 K cooler within 35 seconds, then settled.
 
-How fast local models run on this machine, and which ones produced the heat: [benchmarks/BENCHMARKS.md](benchmarks/BENCHMARKS.md).
+How fast local models run on this machine, and which ones produced the heat: [Mac-Mini-M6-LLM-benchmarks](https://github.com/HDZucht/Mac-Mini-M6-LLM-benchmarks).
 
 ## What you get
 
@@ -39,7 +39,6 @@ How fast local models run on this machine, and which ones produced the heat: [be
 | `install.sh` | builds and installs `fanguard run` as a LaunchDaemon (root) |
 | `menubar/` (Swift, ~75 lines) | menu bar item `76° · 3588` with a mode menu, registers itself as a login item |
 | `sensorprobe.c` | lists every HID and SMC temperature sensor of your Mac |
-| `benchmarks/` | decode speed of 16 local LLMs on the Mac mini M6, and the script that measured it |
 
 No dependencies beyond the Xcode Command Line Tools (`clang`, `swiftc`). No Homebrew, no kernel extension.
 
