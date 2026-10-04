@@ -29,6 +29,8 @@ First run under the same load:
 
 13 K cooler within 35 seconds, then settled.
 
+How fast local models run on this machine, and which ones produced the heat: [benchmarks/BENCHMARKS.md](benchmarks/BENCHMARKS.md).
+
 ## What you get
 
 | Part | What it does |
@@ -37,6 +39,7 @@ First run under the same load:
 | `install.sh` | builds and installs `fanguard run` as a LaunchDaemon (root) |
 | `menubar/` (Swift, ~75 lines) | menu bar item `76° · 3588` with a mode menu, registers itself as a login item |
 | `sensorprobe.c` | lists every HID and SMC temperature sensor of your Mac |
+| `benchmarks/` | decode speed of 16 local LLMs on the Mac mini M6, and the script that measured it |
 
 No dependencies beyond the Xcode Command Line Tools (`clang`, `swiftc`). No Homebrew, no kernel extension.
 
@@ -60,6 +63,10 @@ No dependencies beyond the Xcode Command Line Tools (`clang`, `swiftc`). No Home
 - **Modes** (file `/Users/Shared/mac-fan-guard/mode`): `curve` (default, as above); a number such as `50` or `100` sets that percentage as a **minimum**, and the curve can still raise it when things get hot; `auto` leaves everything to Apple, including under load.
 - **Rises readily, falls reluctantly:** a new target is written when the curve has moved more than 50 rpm up or 150 rpm down, so the fan does not hunt.
 - **All fans.** It reads `FNum`; on Macs with two fans each gets the same fraction of its own range.
+
+## ⚠️ Use at your own risk
+
+This tool writes to the System Management Controller (SMC) of your Mac through an undocumented interface. It has been tested on a single Mac mini M6. It is provided **as is, without any warranty**, under the MIT License. You alone are responsible for running it on your hardware; the authors accept no liability for damage, data loss, voided warranties or any other consequence. If you are unsure, use only the read-only commands (`fanguard status`, `fanguard sensors`, `sensorprobe`).
 
 ## Install
 
