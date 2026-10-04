@@ -18,7 +18,7 @@ The user's hardware is at stake. Follow the order below and show the user each r
 4. **Write test (root, the user runs it).** `sudo ./fanguard test` sets maximum for 12 s and returns to automatic. Ask the user whether the fan audibly spun up and paste the output. Proceed only if the rpm rose towards the maximum. If the write fails, stop and report; do not experiment with other SMC keys.
 5. **Install.** The user runs `sudo ./install.sh`. Then check `tail /var/log/mac-fan-guard.log` and `./fanguard status`.
 6. **Menu bar (optional, no root).** `menubar/build.sh`. Mention that the app registers itself as a login item.
-7. A behavioural security tool (e.g. BlockBlock) will report the new LaunchDaemon `io.github.hdzucht.mac-fan-guard`. That is expected; tell the user before they see it.
+7. A behavioural security tool (e.g. BlockBlock) may report the new LaunchDaemon `io.github.hdzucht.mac-fan-guard`. That is expected; tell the user before they see it.
 
 Never run `sudo` yourself without the user's explicit go-ahead, and never install while another fan tool is controlling the fan.
 
@@ -34,7 +34,7 @@ Never run `sudo` yourself without the user's explicit go-ahead, and never instal
 
 ## Rules for changing the code
 
-- **The controller may only raise the fan above Apple's automatic speed.** Keep the floor (`floor_rpm`) and never write a target below the fan's own minimum (`F*Mn`).
+- **The controller may only raise the fan above Apple's automatic speed.** Keep the floor (`floor_rpm`), keep percentages as a minimum under the curve, and never write a target below the fan's own minimum (`F*Mn`). Only the explicit `auto` mode hands everything to Apple.
 - **Every exit path returns to automatic.** Keep `set_auto()` in the signal path, at the end of `run()` and in `install.sh --remove`. Any new exit path needs it too.
 - **Root code stays small.** The daemon reads the SMC and one text file. Anything with a user interface or network belongs in an unprivileged process that writes the mode file.
 - **Undocumented SMC keys:** read freely, write only `F*md`, `F*Tg` and `Ftst`. Do not write other keys.

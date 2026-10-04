@@ -11,7 +11,7 @@ final class App: NSObject, NSApplicationDelegate, NSMenuDelegate {
     let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     let menu = NSMenu()
     let infoLine = NSMenuItem(title: "…", action: nil, keyEquivalent: "")
-    let modes: [(String, String)] = [("curve", "Curve (60 → 85 °C)"), ("auto", "Apple automatic"), ("50", "Fixed 50 %"), ("100", "Fixed 100 %")]
+    let modes: [(String, String)] = [("curve", "Curve (60 → 85 °C)"), ("auto", "Apple automatic"), ("50", "At least 50 %"), ("100", "Full speed (100 %)")]
     var modeItems: [NSMenuItem] = []
     var currentMode = "curve"
     let font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)

@@ -153,7 +153,8 @@ static void status(void) {
     printf("Service mode: %s  (change: echo curve|auto|0-100 > %s)\n", mode, MODE_FILE);
 }
 
-// The service: follows the mode file, applies the curve in mode "curve".
+// The service: follows the mode file. "curve": Apple below start, curve above. A number: that percentage as a
+// minimum, the curve can still raise it. "auto": Apple only.
 static int run(void) {
     int active = 0; double floor_rpm = fmin0; float last = -1;
     char last_mode[32] = "curve";
@@ -166,13 +167,17 @@ static int run(void) {
             snprintf(last_mode, sizeof last_mode, "%s", mode); active = 0; last = -1; set_auto();
         }
         if (!strcmp(mode, "auto")) { nap(); continue; }
-        if (mode[0] >= '0' && mode[0] <= '9') {            // fixed percentage
+        char which[5] = "-"; double t = hottest(which);
+        if (mode[0] >= '0' && mode[0] <= '9') {            // percentage = minimum; the curve may still go higher
             double p = atof(mode); if (p > 100) p = 100;
-            float rpm = fmin0 + (fmax0 - fmin0) * p / 100;
-            if (last != rpm) { set_manual(rpm); last = rpm; }
+            double x = (t - t_start) / (t_full - t_start); if (x < 0) x = 0; if (x > 1) x = 1;
+            float rpm = fmin0 + (fmax0 - fmin0) * (p / 100 > x ? p / 100 : x);
+            if (last < 0 || rpm - last > 50 || last - rpm > 150) {
+                int r = set_manual(rpm); last = rpm;
+                stamp(); printf("%s %.1f °C, minimum %.0f %% -> %.0f rpm%s\n", which, t, p, rpm, r ? " (WRITE FAILED)" : ""); fflush(stdout);
+            }
             nap(); continue;
         }
-        char which[5] = "-"; double t = hottest(which);
         if (!active && t >= t_start) {                      // take over; never go below what Apple was running
             active = 1; floor_rpm = smc_val("F0Ac"); if (floor_rpm < fmin0) floor_rpm = fmin0;
         }
